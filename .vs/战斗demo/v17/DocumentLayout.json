@@ -1,0 +1,176 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\12291\\\u6218\u6597demo\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|c:\\users\\12291\\\u6218\u6597demo\\assets\\scripts\\log.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\log.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\character.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\character.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|c:\\users\\12291\\\u6218\u6597demo\\assets\\scripts\\luamanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\luamanager.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\skill.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\skill.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\buffso.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\buffso.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\buff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\buff.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\skilldictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\skilldictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\finalstate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\finalstate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|C:\\Users\\12291\\\u6218\u6597demo\\assets\\scripts\\buffdictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{801D7F65-D1BB-12F8-EDAB-73796A7C8D7F}|Assembly-CSharp.csproj|solutionrelative:assets\\scripts\\buffdictionary.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{e8b06f52-6d01-11d2-aa7d-00c04f990343}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Log.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Log.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Log.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Log.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Log.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-19T12:56:24.992Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "LuaManager.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\LuaManager.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\LuaManager.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\LuaManager.cs",
+              "RelativeToolTip": "Assets\\Scripts\\LuaManager.cs",
+              "ViewState": "AgIAABUAAAAAAAAAAAAIwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-13T12:06:31.332Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "FinalState.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\FinalState.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\FinalState.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\FinalState.cs",
+              "RelativeToolTip": "Assets\\Scripts\\FinalState.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABMAAAA2AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-10T00:53:37.197Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Character.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Character.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Character.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Character.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Character.cs",
+              "ViewState": "AgIAAFkAAAAAAAAAAAAuwC4AAAAoAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-04T23:51:58.678Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "BuffDictionary.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\BuffDictionary.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\BuffDictionary.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\BuffDictionary.cs",
+              "RelativeToolTip": "Assets\\Scripts\\BuffDictionary.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T01:34:33.057Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SkillDictionary.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\SkillDictionary.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\SkillDictionary.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\SkillDictionary.cs",
+              "RelativeToolTip": "Assets\\Scripts\\SkillDictionary.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-05T04:04:59.366Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "Buff.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Buff.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Buff.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Buff.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Buff.cs",
+              "ViewState": "AgIAAAQAAAAAAAAAAAAkwD8AAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-04T23:56:36.623Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "BuffSO.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\BuffSO.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\BuffSO.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\BuffSO.cs",
+              "RelativeToolTip": "Assets\\Scripts\\BuffSO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAADwvwsAAAAeAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-09T04:23:45.125Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Skill.cs",
+              "DocumentMoniker": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Skill.cs",
+              "RelativeDocumentMoniker": "Assets\\Scripts\\Skill.cs",
+              "ToolTip": "C:\\Users\\12291\\\u6218\u6597demo\\Assets\\Scripts\\Skill.cs",
+              "RelativeToolTip": "Assets\\Scripts\\Skill.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB0AAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-04T23:50:22.787Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
