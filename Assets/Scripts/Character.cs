@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using XLua;
@@ -9,112 +7,48 @@ public class Character : MonoBehaviour
 {
     public FinalState health;
     public FinalState attack;
-    [SerializeField] private List<Skill> skills;
-    public string charactr_name;
-    public List<Buff> buffs;
-    public List<DeBuff> debuffs;
+    [SerializeField] private List<SkillSO> skillConfigs;
+    public string characterName;
+    private int characterId;
 
-    private void Start()
+    void Start()
     {
-        skills = new List<Skill>();
-        buffs = new List<Buff>();
+        characterId = GetInstanceID();
 
-        health = new FinalState(100);
-        attack = new FinalState(10);
-
-        health.OnValueChanged += Health_OnValueChanged;
-        attack.OnValueChanged += Attack_OnValueChanged;
-
-        skills.Add(new Skill(SkillDictionary.Instance.GetSkillSO("attack")));
-
-    }
-
-    private void Attack_OnValueChanged(object sender, EventArgs e)
-    {
-        Log.State($"Attack:{attack.Value}");
-    }
-
-    private void Health_OnValueChanged(object sender, EventArgs e)
-    {
-        Log.State($"Health:{health.Value}");
-    }
-
-    private void Update()
-    {
-        UseSkill();
-        ReloadLuaScript();
-        CheckState();
-        if (Input.GetKeyDown(KeyCode.K))
+        // Ïò SkillManager ×¢²á×Ô¼ºµÄ¼¼ÄÜ
+        if (SkillManager.Instance != null)
         {
-            AddBuff("poison");
-        }
-        for (int i = buffs.Count - 1; i >= 0; i--)
-        {
-            if (buffs[i].ReduceTime(Time.deltaTime, this))
-            {
-                buffs[i].Remove(this);
-                buffs.RemoveAt(i);
-            }
+            SkillManager.Instance.RegisterCharacter(characterId, skillConfigs);
         }
     }
 
-    private void CheckState()
+    void Awake()
     {
-        if (Input.GetKeyDown(KeyCode.H))
+        // È·±£ÔÚ Start Ö®Ç°Íê³É³õÊ¼»¯
+        if (health == null) health = new FinalState(100);
+        if (attack == null) attack = new FinalState(10);
+    }
+
+    void Update()
+    {
+        // ¼¼ÄÜÊÍ·Å£ºJ¼ü
+        if (Input.GetKeyDown(KeyCode.J) && skillConfigs.Count > 0)
         {
-            Log.State(
-                $"Health: {health.Value} | Attack: {attack.Value}"
-            );
+            SkillManager.Instance.RequestCast(characterId, skillConfigs[0].skillID, this, this);
         }
     }
 
-    private void ReloadLuaScript()
-    {
-        if (Input.GetKeyDown(KeyCode.R)) {
-            foreach (Skill skill in skills)
-            {
-                LuaManager.Instance.Reload(skill.GetSkillSO().filePath);
-            }
+    // ÊôÐÔÐÞ¸Ä·½·¨£¨±£³ÖÔ­ÓÐÂß¼­£©
+    public void AddAttack(int val) => attack.AddBonus(val);
+    public void TakeDamage(int damage) => health.AddBase(-damage);
 
-            Log.Skill("Lua Scripts Reloaded");
-        }
-    }
+    // ¸ø Lua Ìá¹©¼òµ¥½Ó¿Ú£¬±ÜÃâ Lua Ö±½Ó·ÃÎÊ FinalState ×Ö¶Î
+    public int GetAttackValue() => (int)attack.Value;
+    public int GetHealthValue() => (int)health.Value;
 
-    private void UseSkill()
+    private void OnDestroy()
     {
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            if (skills[0].ReduceCooldown(Time.deltaTime))
-            {
-                skills[0].Execute(this, this);
-            }
-            else
-            {
-                Log.Skill($"{skills[0].GetSkillSO().skillName}å†·å´ä¸­");
-            }
-        }
-        
-    }
-    public void AddAttack(int val)
-    {
-        attack.AddBonus(val);
-    }
-    public void AddBuff(string buffName)
-    {
-        Buff buff = buffs.Find(b => b.GetBuffSO().buff_name == buffName);
-        if (buff!=null)
-        {
-            buff.AddLevel(1, this);
-        }
-        else
-        {
-            buff = new(BuffDictionary.Instance.GetBuffSO(buffName));
-            buffs.Add(buff);
-            buff.Apply(this);
-        }
-    }
-    public void TakeDamage(int damage)
-    {
-        health.AddBase(-damage);
+        if (SkillManager.Instance != null)
+            SkillManager.Instance.UnregisterCharacter(characterId);
     }
 }

@@ -12,8 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d61609386a40f44a8750e0bc6e82cd1, type: 3}
   m_Name: poison
   m_EditorClassIdentifier: 
-  buff_name: poison
-  max_duration: 2
-  file_path: luaScript/poison
-  maxLevel: 1
+  buffID: 1
+  buffName: poison
+  type: 0
+  duration: 5
   tickInterval: 1
+  maxStack: 1
+  tickDamage: 5
+  attackModifier: 0

@@ -12,7 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d61609386a40f44a8750e0bc6e82cd1, type: 3}
   m_Name: AddAttack
   m_EditorClassIdentifier: 
-  buff_name: AddAttack
-  max_duration: 2
-  file_path: luaScript/AddAttack
-  maxLevel: 2
+  buffID: 0
+  buffName: 
+  type: 0
+  duration: 2
+  tickInterval: 0
+  maxStack: 1
+  tickDamage: 0
+  attackModifier: 0

@@ -1,5 +1,9 @@
 using System;
+using XLua;
 
+
+[LuaCallCSharp]
+[Serializable]
 public class FinalState
 {
     public float baseValue;
