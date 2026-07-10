@@ -485,11 +485,6 @@ public class SkillEditorWindow : EditorWindow
         // 折叠面板 + 一键定位
         EditorGUILayout.BeginHorizontal();
         foldouts[skill] = EditorGUILayout.Foldout(foldouts[skill], $"[{skill.skillID}] {skill.skillName}");
-        if (GUILayout.Button("", GUILayout.Width(25)))
-        {
-            EditorGUIUtility.PingObject(skill);
-        }
-        
         EditorGUILayout.EndHorizontal();
 
         // 展开后的编辑区域
@@ -508,16 +503,32 @@ public class SkillEditorWindow : EditorWindow
             EditorGUILayout.PropertyField(cooldownProp);
 
             //lua脚本路径
+            
             EditorGUILayout.LabelField(
                 "Lua脚本",
                 string.IsNullOrEmpty(skill.filePath)
                     ? "未绑定"
                     : skill.filePath);
+            EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("绑定Lua脚本"))
             {
                 BindLuaScript(skill);
             }
-
+            if (GUILayout.Button("定位", GUILayout.Width(50)))
+            {
+                string luaPath = skill.filePath;
+                if (System.IO.File.Exists(luaPath))
+                {
+                    // 在系统文件管理器中高亮对应的 Lua 文件
+                    EditorUtility.RevealInFinder(luaPath);
+                }
+                else
+                {
+                    Debug.LogWarning($"Lua 脚本不存在：{luaPath}");
+                }
+            }
+            EditorGUILayout.EndHorizontal();
+            //buffSO引用
             if (buffProp != null)
             {
                 EditorGUILayout.PropertyField(buffProp);
