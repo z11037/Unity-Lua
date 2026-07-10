@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 public class UndoStack
@@ -42,5 +43,10 @@ public class UndoStack
     public void Clear()
     {
         history.Clear();
+    }
+
+    public bool HasUndo()
+    {
+        return history.Count > 0;
     }
 }

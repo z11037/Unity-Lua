@@ -79,13 +79,18 @@ public class SkillEditorWindow : EditorWindow
         HandleUndoShortcut();
     }
 
+    //暂时妥协的结果
     private void HandleUndoShortcut()
     {
         Event e = Event.current;
 
-        if (e.type == EventType.KeyDown &&
-            e.control &&
-            e.keyCode == KeyCode.Z)
+        if (e.type != EventType.KeyDown ||
+            !e.control ||
+            e.keyCode != KeyCode.Z)
+            return;
+
+
+        if (unifiedUndoStack.HasUndo())
         {
             PerformUndo();
             e.Use();
@@ -182,27 +187,27 @@ public class SkillEditorWindow : EditorWindow
                 recyclePath = recyclePath,  // recyclePath 是上面计算好的实际路径
             };
 
-            // 移动关联的 Lua 文件及其 .meta 文件
+            // 移动关联 Lua 文件
             if (!string.IsNullOrEmpty(skillToDelete.filePath))
             {
-                string luaCurrentPath =Path.Combine(Application.dataPath,skillToDelete.filePath.Substring("Assets/".Length));
-                if (System.IO.File.Exists(luaCurrentPath))
+                string luaCurrentPath =skillToDelete.filePath.Replace("\\", "/");
+                if (File.Exists(luaCurrentPath))
                 {
-                    string luaFileName = System.IO.Path.GetFileName(luaCurrentPath);
-                    string luaRecyclePath = Path.Combine(Application.dataPath,recycleBinPath.Substring("Assets/".Length),luaFileName);
-                    System.IO.File.Move(luaCurrentPath, luaRecyclePath);
-
-                    // 同步移动 .meta 文件
-                    string luaMetaCurrentPath = luaCurrentPath + ".meta";
-                    if (System.IO.File.Exists(luaMetaCurrentPath))
+                    string luaFileName = Path.GetFileName(luaCurrentPath);
+                    string luaRecyclePath =recycleBinPath + "/" + luaFileName;
+                    string error = AssetDatabase.MoveAsset( luaCurrentPath,luaRecyclePath);
+                    if (!string.IsNullOrEmpty(error))
                     {
-                        string luaMetaRecyclePath = luaRecyclePath + ".meta";
-                        System.IO.File.Move(luaMetaCurrentPath, luaMetaRecyclePath);
+                        Debug.LogError("移动Lua失败：" + error);
                     }
-                    undoAction.luaOriginalPath = luaCurrentPath;
-                    undoAction.luaRecyclePath = luaRecyclePath;
+                    else
+                    {
+                        undoAction.luaOriginalPath = luaCurrentPath;
+                        undoAction.luaRecyclePath =luaRecyclePath;
+                    }
                 }
-            }
+            
+        }
             // 记录本次操作，用于撤销
             actions.Add(undoAction);
             // 从内存列表移除
@@ -415,17 +420,13 @@ public class SkillEditorWindow : EditorWindow
         if (string.IsNullOrEmpty(skill.filePath))
             return;
 
-
-        string luaName =
-            Path.GetFileName(skill.filePath);
-
+        string luaName = Path.GetFileName(skill.filePath);
 
         string recycleLua =
             Path.Combine(
-                Application.dataPath,
-                SkillPathConfig.RecycleBin.Substring("Assets/".Length),
-                luaName);
-
+                SkillPathConfig.RecycleBin,
+                luaName
+            ).Replace("\\", "/");
 
         if (!File.Exists(recycleLua))
         {
@@ -434,27 +435,19 @@ public class SkillEditorWindow : EditorWindow
             return;
         }
 
-
         string targetLua =
-            Path.Combine(
-                Application.dataPath,
-                skill.filePath.Substring("Assets/".Length));
+            skill.filePath.Replace("\\", "/");
 
+        string error =
+            AssetDatabase.MoveAsset(
+                recycleLua,
+                targetLua
+            );
 
-        File.Move(
-            recycleLua,
-            targetLua);
-
-
-        string recycleMeta =
-            recycleLua + ".meta";
-
-
-        if (File.Exists(recycleMeta))
+        if (!string.IsNullOrEmpty(error))
         {
-            File.Move(
-                recycleMeta,
-                targetLua + ".meta");
+            Debug.LogError(
+                "恢复Lua失败:" + error);
         }
     }
 
@@ -619,51 +612,31 @@ public class SkillEditorWindow : EditorWindow
                     break;
 
                 case UndoStack.UndoActionType.Delete:
-                    // 撤销“删除技能”：将文件从回收站移回原路径
+
+                    // 恢复SkillSO
                     string error = AssetDatabase.MoveAsset(
-    action.recyclePath,
-    action.originalPath);
+                        action.recyclePath,
+                        action.originalPath);
 
                     if (!string.IsNullOrEmpty(error))
-                    {
                         Debug.LogError(error);
-                    }
-                    // 恢复 Lua
-                    if (!string.IsNullOrEmpty(action.luaRecyclePath) &&
-                        File.Exists(action.luaRecyclePath))
+
+
+                    // 恢复Lua
+                    if (!string.IsNullOrEmpty(action.luaRecyclePath))
                     {
-                        string directory =
-                            Path.GetDirectoryName(action.luaOriginalPath);
-
-                        if (!Directory.Exists(directory))
-                        {
-                            Directory.CreateDirectory(directory);
-                        }
-
-                        File.Move(
+                        error = AssetDatabase.MoveAsset(
                             action.luaRecyclePath,
                             action.luaOriginalPath);
+
+                        if (!string.IsNullOrEmpty(error))
+                            Debug.LogError(error);
                     }
 
-
-                    // 恢复 Lua meta
-                    string luaMetaRecycle =
-                        action.luaRecyclePath + ".meta";
-
-                    string luaMetaOriginal =
-                        action.luaOriginalPath + ".meta";
-
-
-                    if (File.Exists(luaMetaRecycle))
-                    {
-                        File.Move(
-                            luaMetaRecycle,
-                            luaMetaOriginal);
-                    }
                     break;
 
                 case UndoStack.UndoActionType.Edit:
-                    // 编辑操作由 SerializedObject 原生处理，这里不需要额外逻辑
+                    // 需要自行实现
                     break;
             }
         }

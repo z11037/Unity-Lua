@@ -9,7 +9,7 @@ public class SkillImporter
     [MenuItem("Tools/导入技能CSV")]
     public static void Import()
     {
-        // 1. 选择CSV文件
+        // 选择CSV文件
         string path = EditorUtility.OpenFilePanel("选择技能CSV文件", "", "csv");
         if (string.IsNullOrEmpty(path))
         {
@@ -17,14 +17,14 @@ public class SkillImporter
             return;
         }
 
-        // 2. 检查文件是否存在
+        // 检查文件是否存在
         if (!File.Exists(path))
         {
             Debug.LogError($"文件不存在：{path}");
             return;
         }
 
-        // 3. 确保目标文件夹存在（放在循环外，只执行一次）
+        // 确保目标文件夹存在
         string folderPath = "Assets/ScriptableObjects/SkillSO";
         if (!AssetDatabase.IsValidFolder(folderPath))
         {
@@ -34,7 +34,7 @@ public class SkillImporter
             AssetDatabase.Refresh();
         }
 
-        // 4. 一次性建立 skillID → SkillSO 的索引（避免循环内反复扫描）
+        //  一次性建立 skillID → SkillSO 的索引（避免循环内反复扫描）
         Dictionary<int, SkillSO> skillMap = new Dictionary<int, SkillSO>();
         string[] allGuids = AssetDatabase.FindAssets("t:SkillSO", new[] { folderPath });
         foreach (string guid in allGuids)
@@ -45,7 +45,7 @@ public class SkillImporter
                 skillMap[so.skillID] = so;
         }
 
-        // 5. 读取所有行
+        //  读取所有行
         string[] lines = File.ReadAllLines(path);
         if (lines.Length < 2)
         {
@@ -58,7 +58,7 @@ public class SkillImporter
         int failCount = 0;
         List<SkillSO> importedSkills = new List<SkillSO>();
         HashSet<int> importedIds = new HashSet<int>();
-        // 6. 逐行解析（跳过表头）
+        //  逐行解析（跳过表头）
         for (int i = 1; i < lines.Length; i++)
         {
             string line = lines[i].Trim();
@@ -107,7 +107,7 @@ public class SkillImporter
                 continue;
             }
 
-            // 7. 从索引中查找或创建 SkillSO
+            // 从索引中查找或创建 SkillSO
             skillMap.TryGetValue(id, out SkillSO skill);
             bool isNew = (skill == null);
 
@@ -127,7 +127,7 @@ public class SkillImporter
                 updatedCount++;
             }
 
-            // 8. 更新字段（使用 SerializedObject 规范修改）
+            // 更新字段（使用 SerializedObject 规范修改）
             SerializedObject so = new SerializedObject(skill);
             so.Update();
 
