@@ -92,7 +92,10 @@ public class SkillEditorWindow : EditorWindow
 
         if (unifiedUndoStack.HasUndo())
         {
-            PerformUndo();
+            unifiedUndoStack.PerformUndo();
+            // 刷新数据并重绘UI
+            LoadSkillData();
+            Repaint();
             e.Use();
         }
     }
@@ -577,82 +580,5 @@ public class SkillEditorWindow : EditorWindow
         skills = SkillRepository.LoadAll();
     }
 
-    private void PerformUndo()
-    {
-        Debug.Log("PerformUndo");
-        // 从撤销栈中弹出最近一次操作
-        var lastActions = unifiedUndoStack.Undo();
-        Debug.Log(lastActions == null ? "Undo=null" : $"Undo={lastActions.Count}");
 
-        // 栈为空，无需处理
-        if (lastActions == null)
-            return;
-
-        foreach (var action in lastActions)
-        {
-            switch (action.type)
-            {
-                case UndoStack.UndoActionType.Create:
-                    // 撤销“创建技能”：删除对应的资产文件
-                    string path = AssetDatabase.GetAssetPath(action.skill);
-                    if (!string.IsNullOrEmpty(path))
-                        AssetDatabase.DeleteAsset(path);
-                    break;
-
-                case UndoStack.UndoActionType.Delete:
-                    {
-
-                        // 恢复SkillSO
-                        string error = AssetDatabase.MoveAsset(
-                            action.recyclePath,
-                            action.originalPath);
-
-                        if (!string.IsNullOrEmpty(error))
-                            Debug.LogError(error);
-
-
-                        // 恢复Lua
-                        if (!string.IsNullOrEmpty(action.luaRecyclePath))
-                        {
-                            error = AssetDatabase.MoveAsset(
-                                action.luaRecyclePath,
-                                action.luaOriginalPath);
-
-                            if (!string.IsNullOrEmpty(error))
-                                Debug.LogError(error);
-                        }
-
-                        break;
-                    }
-
-                case UndoStack.UndoActionType.Restore:
-                    {
-                        // 删除SkillSO
-                        string error = AssetDatabase.MoveAsset(
-                            action.originalPath,
-                            action.recyclePath);
-
-                        if (!string.IsNullOrEmpty(error))
-                            Debug.LogError(error);
-
-
-                        // 删除Lua
-                        if (!string.IsNullOrEmpty(action.luaRecyclePath))
-                        {
-                            error = AssetDatabase.MoveAsset(
-                                action.luaOriginalPath,
-                                action.luaRecyclePath);
-
-                            if (!string.IsNullOrEmpty(error))
-                                Debug.LogError(error);
-                        }
-                        break;
-                    }
-            }
-        }
-
-        // 刷新数据并重绘UI
-        LoadSkillData();
-        Repaint();
-    }
 }
