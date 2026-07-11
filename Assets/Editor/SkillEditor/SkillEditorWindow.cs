@@ -294,36 +294,22 @@ public class SkillEditorWindow : EditorWindow
             
         }
 
-        if (GUILayout.Button("生成SkillID枚举"))
-        {
-            GenerateSkillIdEnum();
-        }
-
         if (GUILayout.Button("Lua脚本导出"))
         {
             ExportLuaTemplates();
         }
+
+        if (GUILayout.Button("技能配置构建"))
+        {
+            BuildSkillConfig();
+        }
     }
 
-    private void GenerateSkillIdEnum()
-{
-    string enumPath = Application.dataPath + "/SkillID.cs";
-    using (System.IO.StreamWriter sw = new System.IO.StreamWriter(enumPath))
+    private void BuildSkillConfig()
     {
-        sw.WriteLine("public enum SkillID");
-        sw.WriteLine("{");
-        for (int i = 0; i < skills.Count; i++)
-        {
-            string comma = (i == skills.Count - 1) ? "" : ",";
-            // 去掉名字中的空格，防止非法标识符
-            string enumName = skills[i].skillName.Replace(" ", "").Replace("-", "_");
-            sw.WriteLine($"    {enumName} = {skills[i].skillID}{comma}");
-        }
-        sw.WriteLine("}");
+        SkillPipeline.Build();
+        Debug.Log("技能配置构建完成");
     }
-    AssetDatabase.Refresh();
-    Debug.Log($"SkillID 枚举已生成到 Assets/SkillID.cs");
-}
     private void ExportLuaTemplates()
     {
         LuaExportService.Export(skills);

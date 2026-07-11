@@ -7,7 +7,7 @@ using Debug = UnityEngine.Debug;
 
 public class SkillPipeline
 {
-    [MenuItem("Tools/一键构建技能流水线")]
+    [MenuItem("Tools/技能配置构建")]
     public static void Build()
     {
         var steps = new List<IBuildStep>
