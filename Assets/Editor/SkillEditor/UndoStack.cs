@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 public class UndoStack
 {
-    public enum UndoActionType { Create, Delete, Edit }
+    public enum UndoActionType { Create, Delete, Restore }
 
     public struct UndoAction
     {

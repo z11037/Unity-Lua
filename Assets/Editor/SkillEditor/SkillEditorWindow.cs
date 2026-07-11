@@ -386,68 +386,56 @@ public class SkillEditorWindow : EditorWindow
 
     public void RestoreFromRecycleBin(SkillSO recycleSkill)
     {
-        string currentPath = AssetDatabase.GetAssetPath(recycleSkill);
-
-        string fileName =System.IO.Path.GetFileName(currentPath);
-
-        string targetPath = SkillPathConfig.SkillFolder + "/" + fileName;
+        string recyclePath =AssetDatabase.GetAssetPath(recycleSkill);
+        string fileName =Path.GetFileName(recyclePath);
+        string targetPath =SkillPathConfig.SkillFolder + "/" + fileName;
 
         int counter = 1;
 
-        while (System.IO.File.Exists(targetPath))
+        while (File.Exists(targetPath))
         {
-            string name =
-                System.IO.Path.GetFileNameWithoutExtension(fileName);
-
-            targetPath = SkillPathConfig.SkillFolder +"/" +name + " " + counter +".asset";
-
+            string name =Path.GetFileNameWithoutExtension(fileName);
+            targetPath = SkillPathConfig.SkillFolder + "/" +name + " " +counter + ".asset";
             counter++;
         }
 
-        AssetDatabase.MoveAsset(currentPath,targetPath);
+        AssetDatabase.MoveAsset(recyclePath,targetPath);
 
-        // 恢复Lua文件
-        RestoreLuaFile(recycleSkill);
+        var action = new UndoStack.UndoAction
+        {
+            type = UndoStack.UndoActionType.Restore,
 
+            // 注意方向
+            recyclePath = recyclePath,
+            originalPath = targetPath,
+        };
+
+
+        RestoreLuaFile(recycleSkill,ref action);
+
+        unifiedUndoStack.Record(new List<UndoStack.UndoAction>{action});
         AssetDatabase.Refresh();
-
         LoadSkillData();
-
         Repaint();
     }
-    private void RestoreLuaFile(SkillSO skill)
+    private void RestoreLuaFile(SkillSO skill, ref UndoStack.UndoAction action)
     {
         if (string.IsNullOrEmpty(skill.filePath))
             return;
-
         string luaName = Path.GetFileName(skill.filePath);
-
-        string recycleLua =
-            Path.Combine(
-                SkillPathConfig.RecycleBin,
-                luaName
-            ).Replace("\\", "/");
-
+        string recycleLua =Path.Combine(SkillPathConfig.RecycleBin,luaName).Replace("\\", "/");
         if (!File.Exists(recycleLua))
         {
-            Debug.LogWarning(
-                "找不到回收站Lua:" + recycleLua);
+            Debug.LogWarning("找不到回收站Lua:" + recycleLua);
             return;
         }
-
-        string targetLua =
-            skill.filePath.Replace("\\", "/");
-
-        string error =
-            AssetDatabase.MoveAsset(
-                recycleLua,
-                targetLua
-            );
-
+        string targetLua =skill.filePath.Replace("\\", "/");
+        string error = AssetDatabase.MoveAsset( recycleLua, targetLua);
+        action.luaRecyclePath = recycleLua;
+        action.luaOriginalPath = targetLua;
         if (!string.IsNullOrEmpty(error))
         {
-            Debug.LogError(
-                "恢复Lua失败:" + error);
+            Debug.LogError( "恢复Lua失败:" + error);
         }
     }
 
@@ -612,32 +600,54 @@ public class SkillEditorWindow : EditorWindow
                     break;
 
                 case UndoStack.UndoActionType.Delete:
-
-                    // 恢复SkillSO
-                    string error = AssetDatabase.MoveAsset(
-                        action.recyclePath,
-                        action.originalPath);
-
-                    if (!string.IsNullOrEmpty(error))
-                        Debug.LogError(error);
-
-
-                    // 恢复Lua
-                    if (!string.IsNullOrEmpty(action.luaRecyclePath))
                     {
-                        error = AssetDatabase.MoveAsset(
-                            action.luaRecyclePath,
-                            action.luaOriginalPath);
+
+                        // 恢复SkillSO
+                        string error = AssetDatabase.MoveAsset(
+                            action.recyclePath,
+                            action.originalPath);
 
                         if (!string.IsNullOrEmpty(error))
                             Debug.LogError(error);
+
+
+                        // 恢复Lua
+                        if (!string.IsNullOrEmpty(action.luaRecyclePath))
+                        {
+                            error = AssetDatabase.MoveAsset(
+                                action.luaRecyclePath,
+                                action.luaOriginalPath);
+
+                            if (!string.IsNullOrEmpty(error))
+                                Debug.LogError(error);
+                        }
+
+                        break;
                     }
 
-                    break;
+                case UndoStack.UndoActionType.Restore:
+                    {
+                        // 删除SkillSO
+                        string error = AssetDatabase.MoveAsset(
+                            action.originalPath,
+                            action.recyclePath);
 
-                case UndoStack.UndoActionType.Edit:
-                    // 需要自行实现
-                    break;
+                        if (!string.IsNullOrEmpty(error))
+                            Debug.LogError(error);
+
+
+                        // 删除Lua
+                        if (!string.IsNullOrEmpty(action.luaRecyclePath))
+                        {
+                            error = AssetDatabase.MoveAsset(
+                                action.luaOriginalPath,
+                                action.luaRecyclePath);
+
+                            if (!string.IsNullOrEmpty(error))
+                                Debug.LogError(error);
+                        }
+                        break;
+                    }
             }
         }
 
