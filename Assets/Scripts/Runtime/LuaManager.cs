@@ -1,70 +1,165 @@
+using System;
+using System.IO;
 using UnityEngine;
 using XLua;
-using System.IO; // 新增：用于读取文件
 
 public class LuaManager
 {
-    public static LuaManager Instance;
+    public static LuaManager Instance { get; private set; }
+
     private LuaEnv luaEnv;
 
     public void Init()
     {
+        if (luaEnv != null)
+        {
+            Debug.LogWarning("LuaManager已经初始化");
+            return;
+        }
+
         Instance = this;
         luaEnv = new LuaEnv();
-
-        // ========== 新增：配置xLua自定义加载器（核心！） ==========
         luaEnv.AddLoader(CustomLuaLoader);
+
+        Debug.Log("LuaManager初始化完成");
     }
 
-    // 自定义加载器：根据模块名，加载Assets下的Lua文件
+    public string NormalizeLuaModuleName(string filePath)
+    {
+        if (string.IsNullOrWhiteSpace(filePath))
+        {
+            return string.Empty;
+        }
+
+        string moduleName = filePath.Trim().Replace('\\', '/');
+
+        if (moduleName.StartsWith("Assets/", StringComparison.OrdinalIgnoreCase))
+        {
+            moduleName = moduleName.Substring("Assets/".Length);
+        }
+
+        if (moduleName.EndsWith(".lua", StringComparison.OrdinalIgnoreCase))
+        {
+            moduleName = moduleName.Substring(0, moduleName.Length - ".lua".Length);
+        }
+
+        return moduleName;
+    }
+
     private byte[] CustomLuaLoader(ref string moduleName)
     {
-        // 1. 把模块名（如luaScript/1）转为Assets下的文件路径
-        // 替换路径分隔符（兼容Windows/Mac），拼接成完整路径
-        string luaPath = $"{Application.dataPath}/{moduleName}.lua";
-        luaPath = luaPath.Replace('/', Path.DirectorySeparatorChar);
+        string normalizedModuleName = NormalizeLuaModuleName(moduleName);
 
-        // 2. 检查文件是否存在，存在则读取为字节数组返回（xLua需要字节数组）
-        if (File.Exists(luaPath))
+        if (string.IsNullOrEmpty(normalizedModuleName))
         {
-            try
-            {
-                // 读取文件，编码用UTF-8（避免中文乱码）
-                byte[] luaBytes = File.ReadAllBytes(luaPath);
-                Debug.Log($"成功加载Lua文件：{luaPath}");
-                return luaBytes;
-            }
-            catch (System.Exception e)
-            {
-                Debug.LogError($"读取Lua文件失败：{e.Message}");
-                return null;
-            }
-        }
-        else
-        {
-            Debug.LogError($"Lua文件不存在：{luaPath}");
+            Debug.LogError("Lua模块名为空");
             return null;
         }
+
+        moduleName = normalizedModuleName;
+
+        string relativePath = normalizedModuleName + ".lua";
+        relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
+
+        string fullPath = Path.Combine(Application.dataPath, relativePath);
+
+        if (!File.Exists(fullPath))
+        {
+            Debug.LogError($"Lua文件不存在：{fullPath}");
+            return null;
+        }
+
+        try
+        {
+            byte[] luaBytes = File.ReadAllBytes(fullPath);
+            Debug.Log($"成功加载Lua文件：{fullPath}");
+            return luaBytes;
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError($"读取Lua文件失败：{fullPath}");
+            Debug.LogException(exception);
+            return null;
+        }
+    }
+
+    public LuaTable RequireModule(string filePath)
+    {
+        if (luaEnv == null)
+        {
+            Debug.LogError("LuaEnv未初始化");
+            return null;
+        }
+
+        string moduleName = NormalizeLuaModuleName(filePath);
+
+        if (string.IsNullOrEmpty(moduleName))
+        {
+            Debug.LogError("无法加载Lua模块：文件路径为空");
+            return null;
+        }
+
+        string escapedModuleName = EscapeLuaString(moduleName);
+        object[] results = luaEnv.DoString($"return require('{escapedModuleName}')");
+
+        if (results == null || results.Length == 0)
+        {
+            Debug.LogError($"Lua模块没有返回结果：{moduleName}");
+            return null;
+        }
+
+        LuaTable table = results[0] as LuaTable;
+
+        if (table == null)
+        {
+            Debug.LogError($"Lua模块返回值不是LuaTable：{moduleName}");
+            return null;
+        }
+
+        return table;
     }
 
     public object[] DoString(string lua)
     {
-        // 加空值检查，避免luaEnv未初始化崩溃
         if (luaEnv == null)
         {
-            Debug.LogError("LuaEnv未初始化！");
+            Debug.LogError("LuaEnv未初始化");
             return null;
         }
+
         return luaEnv.DoString(lua);
     }
 
     public void Tick()
     {
         if (luaEnv != null)
+        {
             luaEnv.Tick();
+        }
     }
 
-    // 新增：释放LuaEnv，避免内存泄漏
+    public void Reload(string filePath)
+    {
+        if (luaEnv == null)
+        {
+            Debug.LogError("LuaEnv未初始化，无法重载Lua模块");
+            return;
+        }
+
+        string moduleName = NormalizeLuaModuleName(filePath);
+
+        if (string.IsNullOrEmpty(moduleName))
+        {
+            Debug.LogError("无法重载Lua模块：文件路径为空");
+            return;
+        }
+
+        string escapedModuleName = EscapeLuaString(moduleName);
+        luaEnv.DoString($"package.loaded['{escapedModuleName}'] = nil");
+
+        Debug.Log($"已清除Lua模块缓存：{moduleName}");
+    }
+
     public void Dispose()
     {
         if (luaEnv != null)
@@ -72,28 +167,17 @@ public class LuaManager
             luaEnv.Dispose();
             luaEnv = null;
         }
-    }
-    public void Reload(string luaName)
-    {
-        luaEnv.DoString($"package.loaded['{luaName}'] = nil");
-    }
 
-    public SkillExecute GetSkillExecute(string filePath)
-    {
-        if (string.IsNullOrEmpty(filePath)) return null;
-
-        string fullPath = Application.dataPath + "/../" + filePath;
-        if (!System.IO.File.Exists(fullPath))
+        if (Instance == this)
         {
-            Debug.LogWarning($"[LuaManager] Lua 文件不存在: {fullPath}");
-            return null;
+            Instance = null;
         }
 
-        string luaContent = System.IO.File.ReadAllText(fullPath);
-        var ret = DoString(luaContent);
-        if (ret == null || ret.Length == 0) return null;
+        Debug.Log("LuaManager已释放");
+    }
 
-        var table = ret[0] as LuaTable;
-        return table?.Get<SkillExecute>("Execute");
+    private string EscapeLuaString(string value)
+    {
+        return value.Replace("\\", "\\\\").Replace("'", "\\'");
     }
 }

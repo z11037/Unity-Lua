@@ -328,7 +328,6 @@ MonoBehaviour:
     bonus: 0
   skillConfigs:
   - {fileID: 11400000, guid: 59b9bea093594744ebb0a9e83da70b96, type: 2}
-  - {fileID: 11400000, guid: 65c86b644d710024485dfd3b5050ed0e, type: 2}
   characterName: 11
 --- !u!4 &386362217
 Transform:

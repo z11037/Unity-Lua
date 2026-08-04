@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using XLua;
+using static UnityEngine.GraphicsBuffer;
 
 [LuaCallCSharp]
 public class Character : MonoBehaviour
@@ -36,6 +37,7 @@ public class Character : MonoBehaviour
         {
             SkillManager.Instance.RequestCast(characterId, skillConfigs[0].skillID, this, this);
         }
+       
     }
 
     // 属性修改方法（保持原有逻辑）

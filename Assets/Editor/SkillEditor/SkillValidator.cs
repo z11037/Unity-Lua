@@ -34,13 +34,12 @@ public static class SkillValidator
             else
                 nameMap.Add(skill.skillName, skill.skillID);
         }
-
         foreach (var skill in skills)
         {
 
             if (string.IsNullOrWhiteSpace(skill.filePath))
             {
-                errors.Add(
+                Debug.LogWarning(
                     $"警告：技能 {skill.skillName} 的 Lua 引用丢失");
             }
         }

@@ -324,8 +324,10 @@ public class SkillEditorWindow : EditorWindow
                 Debug.LogWarning(err);
     }
 
+    Vector2 scrollPosition;
     private void DrawSkillList()
     {
+        scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
         string[] options = System.Enum.GetNames(typeof(SkillTag));
         int index = (int)tagFilter + 1; // +1 因为有“全部”
 
@@ -370,7 +372,7 @@ public class SkillEditorWindow : EditorWindow
 
             DrawSkillItem(skills[i]);
         }
-        
+        EditorGUILayout.EndScrollView();
     }
 
     public void RestoreFromRecycleBin(SkillSO recycleSkill)

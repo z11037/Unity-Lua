@@ -1,14 +1,33 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using XLua;
 
 public class GameManager : MonoBehaviour
 {
-    void Start()
+    private LuaManager luaManager;
+
+    private void Awake()
     {
-        LuaManager.Instance = new LuaManager();
-        LuaManager.Instance.Init();
+        luaManager = new LuaManager();
+        luaManager.Init();
+
+        Debug.Log("GameManager初始化完成");
     }
 
+    private void Update()
+    {
+        if (luaManager != null)
+        {
+            luaManager.Tick();
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (luaManager != null)
+        {
+            luaManager.Dispose();
+            luaManager = null;
+        }
+
+        Debug.Log("GameManager已销毁");
+    }
 }
