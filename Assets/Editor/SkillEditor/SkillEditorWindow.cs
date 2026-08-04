@@ -10,8 +10,8 @@ using UndoActionType = UndoStack.UndoActionType;
 
 public class SkillEditorWindow : EditorWindow
 {
-    private HashSet<SkillSO> selectedSkills = new HashSet<SkillSO>();
-    private Dictionary<SkillSO, bool> foldouts = new Dictionary<SkillSO, bool>();
+    private HashSet<SkillSO> selectedSkills = new();
+    private Dictionary<SkillSO, bool> foldouts = new();
     private List<SkillSO> skills = new();
     private string newSkillName = "";
     private string searchFilter = "";
@@ -454,7 +454,7 @@ public class SkillEditorWindow : EditorWindow
 
         EditorGUILayout.BeginVertical();
 
-        // 折叠面板 + 一键定位
+        // 折叠面板
         EditorGUILayout.BeginHorizontal();
         foldouts[skill] = EditorGUILayout.Foldout(foldouts[skill], $"[{skill.skillID}] {skill.skillName}");
         EditorGUILayout.EndHorizontal();

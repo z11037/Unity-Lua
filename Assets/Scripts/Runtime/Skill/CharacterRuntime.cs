@@ -9,7 +9,7 @@ public sealed class CharacterRuntime : IDisposable
     private readonly Dictionary<int, Skill> skills = new Dictionary<int, Skill>();
     private readonly List<Buff> buffs = new List<Buff>();
 
-    public List<Buff> Buffs
+    public IReadOnlyList<Buff> Buffs
     {
         get
         {
@@ -45,11 +45,13 @@ public sealed class CharacterRuntime : IDisposable
             if (!skill.IsReady)
             {
                 Log.Skill($"[Error] 角色 {CharacterId} 注册技能 {skillId} 失败：Lua 技能未正确加载");
+
                 skill.Dispose();
                 return false;
             }
 
             skills.Add(skillId, skill);
+
             Log.Skill($"角色 {CharacterId} 注册技能 {skillId} 成功");
             return true;
         }
@@ -117,12 +119,7 @@ public sealed class CharacterRuntime : IDisposable
         {
             Buff buff = buffs[i];
 
-            if (buff == null)
-            {
-                continue;
-            }
-
-            if (buff.Config == null)
+            if (buff == null || buff.Config == null)
             {
                 continue;
             }
@@ -146,22 +143,28 @@ public sealed class CharacterRuntime : IDisposable
         return FindBuff(config.buffID);
     }
 
-    public void AddBuff(Buff buff)
+    public bool AddBuff(Buff buff)
     {
         if (buff == null)
         {
             Log.Buff("[Warning] 无法添加空 Buff");
-            return;
+            return false;
         }
 
-        if (buffs.Contains(buff))
+        if (buff.Config == null)
+        {
+            Log.Buff("[Warning] 无法添加配置为空的 Buff");
+            return false;
+        }
+
+        if (FindBuff(buff.Config.buffID) != null)
         {
             Log.Buff($"[Warning] 角色 {CharacterId} 已经持有 Buff {buff.Config.buffID}");
-            return;
+            return false;
         }
 
         buffs.Add(buff);
-        Log.Buff($"角色 {CharacterId} 添加 Buff {buff.Config.buffID}");
+        return true;
     }
 
     public bool RemoveBuff(Buff buff)
@@ -171,14 +174,7 @@ public sealed class CharacterRuntime : IDisposable
             return false;
         }
 
-        bool removed = buffs.Remove(buff);
-
-        if (removed)
-        {
-            Log.Buff($"角色 {CharacterId} 移除 Buff {buff.Config.buffID}");
-        }
-
-        return removed;
+        return buffs.Remove(buff);
     }
 
     public void Tick(float deltaTime)
@@ -198,14 +194,9 @@ public sealed class CharacterRuntime : IDisposable
 
         skills.Clear();
 
-        for (int i = 0; i < buffs.Count; i++)
+        if (buffs.Count > 0)
         {
-            Buff buff = buffs[i];
-
-            if (buff is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
+            Log.Buff($"[Warning] 角色 {CharacterId} 释放时仍有 {buffs.Count} 个 Buff，将直接清空引用");
         }
 
         buffs.Clear();

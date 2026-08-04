@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public class DefaultBuffExecutor : IBuffExecutor
 {
     public void OnApply(Buff buff)
@@ -7,27 +5,50 @@ public class DefaultBuffExecutor : IBuffExecutor
         switch (buff.Config.type)
         {
             case BuffType.Attack:
-                buff.Owner.AddAttack((int)(buff.Config.attackModifier * buff.CurrentStack));
-                break;
+                {
+                    int attackValue = CalculateTotalValue(buff);
+                    buff.Owner.AddAttack(attackValue);
+
+                    Log.Buff($"[DefaultBuffExecutor] {buff.DisplayName} 生效：攻击力变化 {attackValue}，当前层数 {buff.CurrentStack}");
+                    break;
+                }
+
             case BuffType.Poison:
             case BuffType.Heal:
             case BuffType.Shield:
-                // 初始应用时无额外效果，由 OnTick 或 OnRemove 处理
-                break;
+                {
+                    break;
+                }
         }
     }
 
     public void OnTick(Buff buff)
     {
-        Log.Buff($"{buff.Config.buffName} Tick: 造成 {buff.Config.tickDamage * buff.CurrentStack} 点伤害");
+        int tickValue = CalculateTotalValue(buff);
+
         switch (buff.Config.type)
         {
             case BuffType.Poison:
-                buff.Owner.TakeDamage((int)(buff.Config.tickDamage * buff.CurrentStack));
-                break;
+                {
+                    buff.Owner.TakeDamage(tickValue);
+
+                    Log.Buff($"[DefaultBuffExecutor] {buff.DisplayName} Tick：造成 {tickValue} 点伤害，当前层数 {buff.CurrentStack}");
+                    break;
+                }
+
             case BuffType.Heal:
-                buff.Owner.TakeDamage((int)(-buff.Config.tickDamage * buff.CurrentStack));
-                break;
+                {
+                    buff.Owner.TakeDamage(-tickValue);
+
+                    Log.Buff($"[DefaultBuffExecutor] {buff.DisplayName} Tick：恢复 {tickValue} 点生命，当前层数 {buff.CurrentStack}");
+                    break;
+                }
+
+            case BuffType.Attack:
+            case BuffType.Shield:
+                {
+                    break;
+                }
         }
     }
 
@@ -36,21 +57,56 @@ public class DefaultBuffExecutor : IBuffExecutor
         switch (buff.Config.type)
         {
             case BuffType.Attack:
-                // 先移除旧层数效果，再应用新层数效果
-                buff.Owner.AddAttack((int)(-buff.Config.attackModifier * (buff.CurrentStack - 1)));
-                buff.Owner.AddAttack((int)(buff.Config.attackModifier * buff.CurrentStack));
-                break;
+                {
+                    int previousStack = buff.CurrentStack - 1;
+                    int previousValue = CalculateValue(buff.Config.effectValue, previousStack);
+                    int currentValue = CalculateTotalValue(buff);
+                    int addedValue = currentValue - previousValue;
+
+                    buff.Owner.AddAttack(addedValue);
+
+                    Log.Buff($"[DefaultBuffExecutor] {buff.DisplayName} 叠层：攻击力额外变化 {addedValue}，当前层数 {buff.CurrentStack}");
+                    break;
+                }
+
+            case BuffType.Poison:
+            case BuffType.Heal:
+            case BuffType.Shield:
+                {
+                    break;
+                }
         }
     }
 
     public void OnRemove(Buff buff)
     {
-        Log.Buff($"{buff.Config.buffName} 被移除");
         switch (buff.Config.type)
         {
             case BuffType.Attack:
-                buff.Owner.AddAttack((int)(-buff.Config.attackModifier * buff.CurrentStack));
-                break;
+                {
+                    int attackValue = CalculateTotalValue(buff);
+                    buff.Owner.AddAttack(-attackValue);
+
+                    Log.Buff($"[DefaultBuffExecutor] {buff.DisplayName} 移除：撤销攻击力变化 {attackValue}");
+                    break;
+                }
+
+            case BuffType.Poison:
+            case BuffType.Heal:
+            case BuffType.Shield:
+                {
+                    break;
+                }
         }
+    }
+
+    private int CalculateTotalValue(Buff buff)
+    {
+        return CalculateValue(buff.Config.effectValue, buff.CurrentStack);
+    }
+
+    private int CalculateValue(float effectValue, int stack)
+    {
+        return (int)(effectValue * stack);
     }
 }

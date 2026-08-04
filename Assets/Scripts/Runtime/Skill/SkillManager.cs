@@ -121,6 +121,10 @@ public sealed class SkillManager : MonoBehaviour
     {
         foreach (CharacterRuntime runtime in runtimes.Values)
         {
+            if (BuffManager.Instance != null)
+            {
+                BuffManager.Instance.RemoveAllBuffs(runtime);
+            }
             runtime.Dispose();
         }
 

@@ -8,7 +8,7 @@ public enum BuffType
     Shield    // 护盾（预留）
 }
 
-[CreateAssetMenu(fileName = "BuffSO", menuName = "技能系统/BuffSO")]
+[CreateAssetMenu(fileName = "BuffSO", menuName = "BuffSO")]
 public class BuffSO : ScriptableObject
 {
     public int buffID;
@@ -17,6 +17,22 @@ public class BuffSO : ScriptableObject
     public float duration;
     public float tickInterval;
     public int maxStack = 1;
-    public float tickDamage;
-    public float attackModifier;
+    public float effectValue;
+    private void OnValidate()
+    {
+        if (duration < 0f)
+        {
+            duration = 0f;
+        }
+
+        if (tickInterval < 0f)
+        {
+            tickInterval = 0f;
+        }
+
+        if (maxStack < 1)
+        {
+            maxStack = 1;
+        }
+    }
 }

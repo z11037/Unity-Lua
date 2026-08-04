@@ -1,53 +1,234 @@
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using UnityEngine;
 
 public class BuffManager : MonoBehaviour
 {
     public static BuffManager Instance { get; private set; }
+
     private readonly IBuffExecutor executor = new DefaultBuffExecutor();
 
-    void Awake() => Instance = this;
-
-    void Update()
+    private void Awake()
     {
-
-        foreach (var runtime in SkillManager.Instance.GetAllRuntimes())
+        if (Instance != null && Instance != this)
         {
-            var buffs = runtime.Buffs;
-            for (int i = buffs.Count - 1; i >= 0; i--)
-            {
-                Buff buff = buffs[i];
-                int ticks = buff.Update(Time.deltaTime);
-
-                for (int t = 0; t < ticks; t++)
-                    executor.OnTick(buff);
-
-                if (buff.IsExpired)
-                {
-                    executor.OnRemove(buff);
-                    runtime.RemoveBuff(buff);
-                }
-            }
-        }
-    }
-    public void AddBuff(Character target, BuffSO config, Character source)
-    {
-        var runtime = SkillManager.Instance.GetRuntime(target.GetInstanceID());
-        if (runtime == null) return;
-
-        var existing = runtime.FindBuff(config.buffID);
-        if (existing != null)
-        {
-            existing.AddStack();
-            executor.OnStack(existing);
-            Log.Buff($"[BuffManager] Buff 叠加: {config.buffName}，层数 {existing.CurrentStack}");
+            Debug.Log("[BuffManager] 场景中存在重复实例，当前实例将被销毁");
+            Destroy(gameObject);
             return;
         }
 
-        Buff newBuff = new Buff(config, source, target);
-        runtime.AddBuff(newBuff);
-        executor.OnApply(newBuff);
-        Log.Buff($"[BuffManager] Buff 添加: {config.buffName}，持续 {config.duration} 秒");
+        Instance = this;
+        Debug.Log("[BuffManager] 初始化完成");
+    }
+
+    private void Update()
+    {
+        if (SkillManager.Instance == null)
+        {
+            return;
+        }
+
+        float deltaTime = Time.deltaTime;
+
+        foreach (CharacterRuntime runtime in SkillManager.Instance.GetAllRuntimes())
+        {
+            if (runtime == null)
+            {
+                continue;
+            }
+
+            for (int i = runtime.Buffs.Count - 1; i >= 0; i--)
+            {
+                Buff buff = runtime.Buffs[i];
+
+                if (buff == null)
+                {
+                    continue;
+                }
+
+                UpdateBuff(runtime, buff, deltaTime);
+            }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            Instance = null;
+        }
+
+        Debug.Log("[BuffManager] 已销毁");
+    }
+
+    public void AddBuff(Character target, BuffSO config, Character source)
+    {
+        if (target == null)
+        {
+            Log.Buff("[Warning] Buff 添加失败：目标角色为空");
+            return;
+        }
+
+        if (config == null)
+        {
+            Log.Buff("[Warning] Buff 添加失败：配置为空");
+            return;
+        }
+
+        if (SkillManager.Instance == null)
+        {
+            Log.Buff($"[Warning] Buff {config.buffID} 添加失败：SkillManager 尚未初始化");
+            return;
+        }
+
+        CharacterRuntime runtime = SkillManager.Instance.GetRuntime(target.GetInstanceID());
+
+        if (runtime == null)
+        {
+            Log.Buff($"[Warning] Buff {config.buffID} 添加失败：目标角色未注册 CharacterRuntime");
+            return;
+        }
+
+        Buff existingBuff = runtime.FindBuff(config.buffID);
+
+        if (existingBuff != null)
+        {
+            ReapplyBuff(existingBuff);
+            return;
+        }
+
+        CreateBuff(runtime, target, config, source);
+    }
+
+    public void RemoveAllBuffs(CharacterRuntime runtime)
+    {
+        if (runtime == null)
+        {
+            return;
+        }
+
+        for (int i = runtime.Buffs.Count - 1; i >= 0; i--)
+        {
+            Buff buff = runtime.Buffs[i];
+
+            if (buff == null)
+            {
+                continue;
+            }
+
+            ExecuteRemove(buff);
+            runtime.RemoveBuff(buff);
+        }
+
+        Log.Buff($"[BuffManager] 角色 {runtime.CharacterId} 的 Buff 已全部清理");
+    }
+
+    private void UpdateBuff(CharacterRuntime runtime, Buff buff, float deltaTime)
+    {
+        int tickCount = buff.Update(deltaTime);
+
+        for (int tickIndex = 0; tickIndex < tickCount; tickIndex++)
+        {
+            ExecuteTick(buff);
+        }
+
+        if (!buff.IsExpired)
+        {
+            return;
+        }
+
+        ExecuteRemove(buff);
+        runtime.RemoveBuff(buff);
+
+        Log.Buff($"[BuffManager] Buff 到期移除：{buff.DisplayName}");
+    }
+
+    private void ReapplyBuff(Buff buff)
+    {
+        bool stackIncreased = buff.Reapply();
+
+        if (stackIncreased)
+        {
+            ExecuteStack(buff);
+
+            Log.Buff($"[BuffManager] Buff 叠加：{buff.DisplayName}，当前层数 {buff.CurrentStack}/{buff.MaxStack}");
+            return;
+        }
+
+        Log.Buff($"[BuffManager] Buff 已达到最大层数，仅刷新持续时间：{buff.DisplayName}，当前层数 {buff.CurrentStack}/{buff.MaxStack}");
+    }
+
+    private void CreateBuff(CharacterRuntime runtime, Character target, BuffSO config, Character source)
+    {
+        Buff newBuff;
+
+        try
+        {
+            newBuff = new Buff(config, source, target);
+        }
+        catch (Exception exception)
+        {
+            Log.Buff($"[Error] Buff {config.buffID} 创建失败");
+            Debug.LogException(exception);
+            return;
+        }
+
+        if (!runtime.AddBuff(newBuff))
+        {
+            return;
+        }
+
+        try
+        {
+            executor.OnApply(newBuff);
+        }
+        catch (Exception exception)
+        {
+            runtime.RemoveBuff(newBuff);
+
+            Log.Buff($"[Error] Buff {newBuff.DisplayName} 初始效果执行异常，已取消添加");
+            Debug.LogException(exception);
+            return;
+        }
+
+        Log.Buff($"[BuffManager] Buff 添加：{newBuff.DisplayName}，层数 {newBuff.CurrentStack}/{newBuff.MaxStack}，持续 {newBuff.RemainingTime} 秒");
+    }
+
+    private void ExecuteTick(Buff buff)
+    {
+        try
+        {
+            executor.OnTick(buff);
+        }
+        catch (Exception exception)
+        {
+            Log.Buff($"[Error] Buff {buff.DisplayName} Tick 执行异常");
+            Debug.LogException(exception);
+        }
+    }
+
+    private void ExecuteStack(Buff buff)
+    {
+        try
+        {
+            executor.OnStack(buff);
+        }
+        catch (Exception exception)
+        {
+            Log.Buff($"[Error] Buff {buff.DisplayName} 叠层效果执行异常");
+            Debug.LogException(exception);
+        }
+    }
+
+    private void ExecuteRemove(Buff buff)
+    {
+        try
+        {
+            executor.OnRemove(buff);
+        }
+        catch (Exception exception)
+        {
+            Log.Buff($"[Error] Buff {buff.DisplayName} 移除效果执行异常");
+            Debug.LogException(exception);
+        }
     }
 }

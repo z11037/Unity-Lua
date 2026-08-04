@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Buff
@@ -7,48 +8,95 @@ public class Buff
     public float RemainingTime { get; private set; }
     public float TickAccumulator { get; private set; }
 
-    // 直接持有 Character 引用
     public Character Owner { get; private set; }
     public Character Source { get; private set; }
 
-    // Tick 触发标记
-    public bool CanConsumeTick => Config.tickInterval > 0 && TickAccumulator >= Config.tickInterval;
-    public bool IsExpired => RemainingTime <= 0;
+    public bool IsExpired => RemainingTime <= 0f;
+    public int MaxStack => Mathf.Max(1, Config.maxStack);
+
+    public string DisplayName
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(Config.buffName))
+            {
+                return Config.buffName;
+            }
+
+            return $"Buff_{Config.buffID}";
+        }
+    }
 
     public Buff(BuffSO config, Character source, Character owner)
     {
+        if (config == null)
+        {
+            throw new ArgumentNullException(nameof(config));
+        }
+
+        if (owner == null)
+        {
+            throw new ArgumentNullException(nameof(owner));
+        }
+
         Config = config;
         Source = source;
         Owner = owner;
+
         CurrentStack = 1;
-        RemainingTime = config.duration;
+        RemainingTime = Mathf.Max(0f, config.duration);
         TickAccumulator = 0f;
     }
 
     public int Update(float deltaTime)
     {
+        if (deltaTime <= 0f || IsExpired)
+        {
+            return 0;
+        }
+
+        float activeDeltaTime = Mathf.Min(deltaTime, RemainingTime);
+
         RemainingTime -= deltaTime;
 
-        if (Config.tickInterval <= 0)
-            return 0;
-
-        TickAccumulator += deltaTime;
-
-        int tickCount = 0;
-        while (TickAccumulator >= Config.tickInterval)
+        if (RemainingTime < 0f)
         {
-            TickAccumulator -= Config.tickInterval;
-            tickCount++;
+            RemainingTime = 0f;
+        }
+
+        if (Config.tickInterval <= 0f)
+        {
+            return 0;
+        }
+
+        TickAccumulator += activeDeltaTime;
+
+        int tickCount = Mathf.FloorToInt(TickAccumulator / Config.tickInterval);
+
+        if (tickCount > 0)
+        {
+            TickAccumulator -= tickCount * Config.tickInterval;
         }
 
         return tickCount;
     }
 
-
-    public void AddStack()
+    public bool Reapply()
     {
-        if (CurrentStack < Config.maxStack)
+        bool stackIncreased = false;
+
+        if (CurrentStack < MaxStack)
+        {
             CurrentStack++;
-        RemainingTime = Config.duration; // 刷新持续时间
+            stackIncreased = true;
+        }
+
+        RefreshDuration();
+        return stackIncreased;
+    }
+
+    public void RefreshDuration()
+    {
+        RemainingTime = Mathf.Max(0f, Config.duration);
     }
 }
