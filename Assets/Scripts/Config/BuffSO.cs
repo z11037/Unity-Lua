@@ -19,11 +19,7 @@ public class BuffSO : ScriptableObject
     public int maxStack = 1;
     public float effectValue;
     private void OnValidate()
-    {
-        if (duration < 0f)
-        {
-            duration = 0f;
-        }
+    { 
 
         if (tickInterval < 0f)
         {

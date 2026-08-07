@@ -6,6 +6,14 @@ public sealed class CharacterRuntime : IDisposable
 {
     public int CharacterId { get; private set; }
 
+    public FinalState MaxHealth { get; private set; }
+    public FinalState Attack { get; private set; }
+    public float CurrentHealth { get; private set; }
+
+    public bool IsDead => CurrentHealth <= 0f;
+
+    public event Action<float, float> OnHealthChanged;
+
     private readonly Dictionary<int, Skill> skills = new Dictionary<int, Skill>();
     private readonly List<Buff> buffs = new List<Buff>();
 
@@ -17,9 +25,75 @@ public sealed class CharacterRuntime : IDisposable
         }
     }
 
-    public CharacterRuntime(int characterId)
+    public CharacterRuntime(int characterId, float initialMaxHealth, float initialAttack)
     {
         CharacterId = characterId;
+
+        float validMaxHealth = Mathf.Max(1f, initialMaxHealth);
+        float validAttack = Mathf.Max(0f, initialAttack);
+
+        MaxHealth = new FinalState(validMaxHealth);
+        Attack = new FinalState(validAttack);
+        CurrentHealth = MaxHealth.Value;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        if (damage <= 0 || IsDead)
+        {
+            return;
+        }
+
+        float previousHealth = CurrentHealth;
+        CurrentHealth = Mathf.Max(0f, CurrentHealth - damage);
+
+        if (Mathf.Approximately(previousHealth, CurrentHealth))
+        {
+            return;
+        }
+
+        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth.Value);
+        Log.Buff($"角色 {CharacterId} 受到 {damage} 点伤害，当前生命值 {CurrentHealth}/{MaxHealth.Value}");
+    }
+
+    public void Heal(int amount)
+    {
+        if (amount <= 0 || IsDead)
+        {
+            return;
+        }
+
+        float previousHealth = CurrentHealth;
+        CurrentHealth = Mathf.Min(MaxHealth.Value, CurrentHealth + amount);
+
+        if (Mathf.Approximately(previousHealth, CurrentHealth))
+        {
+            return;
+        }
+
+        OnHealthChanged?.Invoke(CurrentHealth, MaxHealth.Value);
+        Log.Buff($"角色 {CharacterId} 恢复 {amount} 点生命，当前生命值 {CurrentHealth}/{MaxHealth.Value}");
+    }
+
+    public void AddAttack(int value)
+    {
+        Attack.AddBonus(value);
+        Log.Buff($"角色 {CharacterId} 攻击力变化 {value}，当前攻击力 {Attack.Value}");
+    }
+
+    public int GetHealthValue()
+    {
+        return Mathf.FloorToInt(CurrentHealth);
+    }
+
+    public int GetMaxHealthValue()
+    {
+        return Mathf.FloorToInt(MaxHealth.Value);
+    }
+
+    public int GetAttackValue()
+    {
+        return Mathf.FloorToInt(Attack.Value);
     }
 
     public bool RegisterSkill(SkillSO config)
@@ -45,13 +119,11 @@ public sealed class CharacterRuntime : IDisposable
             if (!skill.IsReady)
             {
                 Log.Skill($"[Error] 角色 {CharacterId} 注册技能 {skillId} 失败：Lua 技能未正确加载");
-
                 skill.Dispose();
                 return false;
             }
 
             skills.Add(skillId, skill);
-
             Log.Skill($"角色 {CharacterId} 注册技能 {skillId} 成功");
             return true;
         }
@@ -84,6 +156,12 @@ public sealed class CharacterRuntime : IDisposable
 
     public bool TryCast(int skillId, Character caster, Character target)
     {
+        if (IsDead)
+        {
+            Log.Skill($"角色 {CharacterId} 已死亡，无法释放技能 {skillId}");
+            return false;
+        }
+
         if (!skills.TryGetValue(skillId, out Skill skill))
         {
             Log.Skill($"角色 {CharacterId} 未注册技能 {skillId}");
@@ -200,6 +278,7 @@ public sealed class CharacterRuntime : IDisposable
         }
 
         buffs.Clear();
+        OnHealthChanged = null;
 
         Debug.Log($"角色 {CharacterId} 的 CharacterRuntime 已释放");
     }

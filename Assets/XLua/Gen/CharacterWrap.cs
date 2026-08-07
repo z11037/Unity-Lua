@@ -21,21 +21,21 @@ namespace XLua.CSObjectWrap
         {
 			ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
 			System.Type type = typeof(Character);
-			Utils.BeginObjectRegister(type, L, translator, 0, 4, 3, 3);
+			Utils.BeginObjectRegister(type, L, translator, 0, 8, 1, 1);
 			
-			Utils.RegisterFunc(L, Utils.METHOD_IDX, "AddAttack", _m_AddAttack);
 			Utils.RegisterFunc(L, Utils.METHOD_IDX, "TakeDamage", _m_TakeDamage);
+			Utils.RegisterFunc(L, Utils.METHOD_IDX, "Heal", _m_Heal);
+			Utils.RegisterFunc(L, Utils.METHOD_IDX, "AddAttack", _m_AddAttack);
 			Utils.RegisterFunc(L, Utils.METHOD_IDX, "GetAttackValue", _m_GetAttackValue);
 			Utils.RegisterFunc(L, Utils.METHOD_IDX, "GetHealthValue", _m_GetHealthValue);
+			Utils.RegisterFunc(L, Utils.METHOD_IDX, "GetMaxHealthValue", _m_GetMaxHealthValue);
+			Utils.RegisterFunc(L, Utils.METHOD_IDX, "IsDead", _m_IsDead);
+			Utils.RegisterFunc(L, Utils.METHOD_IDX, "GetRuntime", _m_GetRuntime);
 			
 			
-			Utils.RegisterFunc(L, Utils.GETTER_IDX, "health", _g_get_health);
-            Utils.RegisterFunc(L, Utils.GETTER_IDX, "attack", _g_get_attack);
-            Utils.RegisterFunc(L, Utils.GETTER_IDX, "characterName", _g_get_characterName);
+			Utils.RegisterFunc(L, Utils.GETTER_IDX, "characterName", _g_get_characterName);
             
-			Utils.RegisterFunc(L, Utils.SETTER_IDX, "health", _s_set_health);
-            Utils.RegisterFunc(L, Utils.SETTER_IDX, "attack", _s_set_attack);
-            Utils.RegisterFunc(L, Utils.SETTER_IDX, "characterName", _s_set_characterName);
+			Utils.RegisterFunc(L, Utils.SETTER_IDX, "characterName", _s_set_characterName);
             
 			
 			Utils.EndObjectRegister(type, L, translator, null, null,
@@ -82,34 +82,6 @@ namespace XLua.CSObjectWrap
         
         
         [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-        static int _m_AddAttack(RealStatePtr L)
-        {
-		    try {
-            
-                ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
-            
-            
-                Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
-            
-            
-                
-                {
-                    int _val = LuaAPI.xlua_tointeger(L, 2);
-                    
-                    gen_to_be_invoked.AddAttack( _val );
-                    
-                    
-                    
-                    return 0;
-                }
-                
-            } catch(System.Exception gen_e) {
-                return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
-            }
-            
-        }
-        
-        [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
         static int _m_TakeDamage(RealStatePtr L)
         {
 		    try {
@@ -125,6 +97,62 @@ namespace XLua.CSObjectWrap
                     int _damage = LuaAPI.xlua_tointeger(L, 2);
                     
                     gen_to_be_invoked.TakeDamage( _damage );
+                    
+                    
+                    
+                    return 0;
+                }
+                
+            } catch(System.Exception gen_e) {
+                return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
+            }
+            
+        }
+        
+        [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+        static int _m_Heal(RealStatePtr L)
+        {
+		    try {
+            
+                ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
+            
+            
+                Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
+            
+            
+                
+                {
+                    int _amount = LuaAPI.xlua_tointeger(L, 2);
+                    
+                    gen_to_be_invoked.Heal( _amount );
+                    
+                    
+                    
+                    return 0;
+                }
+                
+            } catch(System.Exception gen_e) {
+                return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
+            }
+            
+        }
+        
+        [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+        static int _m_AddAttack(RealStatePtr L)
+        {
+		    try {
+            
+                ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
+            
+            
+                Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
+            
+            
+                
+                {
+                    int _value = LuaAPI.xlua_tointeger(L, 2);
+                    
+                    gen_to_be_invoked.AddAttack( _value );
                     
                     
                     
@@ -193,36 +221,92 @@ namespace XLua.CSObjectWrap
             
         }
         
-        
-        
-        
         [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-        static int _g_get_health(RealStatePtr L)
+        static int _m_GetMaxHealthValue(RealStatePtr L)
         {
 		    try {
+            
                 ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
-			
+            
+            
                 Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
-                translator.Push(L, gen_to_be_invoked.health);
+            
+            
+                
+                {
+                    
+                        var gen_ret = gen_to_be_invoked.GetMaxHealthValue(  );
+                        LuaAPI.xlua_pushinteger(L, gen_ret);
+                    
+                    
+                    
+                    return 1;
+                }
+                
             } catch(System.Exception gen_e) {
                 return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
             }
-            return 1;
+            
         }
         
         [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-        static int _g_get_attack(RealStatePtr L)
+        static int _m_IsDead(RealStatePtr L)
         {
 		    try {
+            
                 ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
-			
+            
+            
                 Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
-                translator.Push(L, gen_to_be_invoked.attack);
+            
+            
+                
+                {
+                    
+                        var gen_ret = gen_to_be_invoked.IsDead(  );
+                        LuaAPI.lua_pushboolean(L, gen_ret);
+                    
+                    
+                    
+                    return 1;
+                }
+                
             } catch(System.Exception gen_e) {
                 return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
             }
-            return 1;
+            
         }
+        
+        [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
+        static int _m_GetRuntime(RealStatePtr L)
+        {
+		    try {
+            
+                ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
+            
+            
+                Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
+            
+            
+                
+                {
+                    
+                        var gen_ret = gen_to_be_invoked.GetRuntime(  );
+                        translator.Push(L, gen_ret);
+                    
+                    
+                    
+                    return 1;
+                }
+                
+            } catch(System.Exception gen_e) {
+                return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
+            }
+            
+        }
+        
+        
+        
         
         [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
         static int _g_get_characterName(RealStatePtr L)
@@ -239,36 +323,6 @@ namespace XLua.CSObjectWrap
         }
         
         
-        
-        [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-        static int _s_set_health(RealStatePtr L)
-        {
-		    try {
-                ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
-			
-                Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
-                gen_to_be_invoked.health = (FinalState)translator.GetObject(L, 2, typeof(FinalState));
-            
-            } catch(System.Exception gen_e) {
-                return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
-            }
-            return 0;
-        }
-        
-        [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
-        static int _s_set_attack(RealStatePtr L)
-        {
-		    try {
-                ObjectTranslator translator = ObjectTranslatorPool.Instance.Find(L);
-			
-                Character gen_to_be_invoked = (Character)translator.FastGetCSObj(L, 1);
-                gen_to_be_invoked.attack = (FinalState)translator.GetObject(L, 2, typeof(FinalState));
-            
-            } catch(System.Exception gen_e) {
-                return LuaAPI.luaL_error(L, "c# exception:" + gen_e);
-            }
-            return 0;
-        }
         
         [MonoPInvokeCallbackAttribute(typeof(LuaCSFunction))]
         static int _s_set_characterName(RealStatePtr L)

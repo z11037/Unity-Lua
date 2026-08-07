@@ -38,7 +38,7 @@ public class DefaultBuffExecutor : IBuffExecutor
 
             case BuffType.Heal:
                 {
-                    buff.Owner.TakeDamage(-tickValue);
+                    buff.Owner.Heal(tickValue);
 
                     Log.Buff($"[DefaultBuffExecutor] {buff.DisplayName} Tick：恢复 {tickValue} 点生命，当前层数 {buff.CurrentStack}");
                     break;

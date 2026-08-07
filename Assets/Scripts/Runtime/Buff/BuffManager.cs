@@ -22,6 +22,7 @@ public class BuffManager : MonoBehaviour
 
     private void Update()
     {
+
         if (SkillManager.Instance == null)
         {
             return;
@@ -31,8 +32,16 @@ public class BuffManager : MonoBehaviour
 
         foreach (CharacterRuntime runtime in SkillManager.Instance.GetAllRuntimes())
         {
+            
+
             if (runtime == null)
             {
+                continue;
+            }
+
+            if (runtime.IsDead&&runtime.Buffs.Count!=0)
+            {
+                RemoveAllBuffs(runtime);
                 continue;
             }
 

@@ -1,56 +1,171 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using XLua;
-using static UnityEngine.GraphicsBuffer;
 
 [LuaCallCSharp]
 public class Character : MonoBehaviour
 {
-    public FinalState health;
-    public FinalState attack;
-    [SerializeField] private List<SkillSO> skillConfigs;
+    [FormerlySerializedAs("health")]
+    [SerializeField] private FinalState initialMaxHealth;
+
+    [FormerlySerializedAs("attack")]
+    [SerializeField] private FinalState initialAttack;
+
+    [SerializeField] private List<SkillSO> skillConfigs = new List<SkillSO>();
+
     public string characterName;
+
     private int characterId;
 
-    void Start()
+    private void Awake()
     {
         characterId = GetInstanceID();
 
-        // 向 SkillManager 注册自己的技能
-        if (SkillManager.Instance != null)
+        if (initialMaxHealth == null)
         {
-            SkillManager.Instance.RegisterCharacter(characterId, skillConfigs);
+            initialMaxHealth = new FinalState(100);
+        }
+
+        if (initialAttack == null)
+        {
+            initialAttack = new FinalState(10);
         }
     }
 
-    void Awake()
+    private void Start()
     {
-        // 确保在 Start 之前完成初始化
-        if (health == null) health = new FinalState(100);
-        if (attack == null) attack = new FinalState(10);
-    }
-
-    void Update()
-    {
-        // 技能释放：J键
-        if (Input.GetKeyDown(KeyCode.J) && skillConfigs.Count > 0)
+        if (SkillManager.Instance == null)
         {
-            SkillManager.Instance.RequestCast(characterId, skillConfigs[0].skillID, this, this);
+            Log.Skill($"[Warning] 角色 {characterId} 注册失败：SkillManager 尚未初始化");
+            return;
         }
-       
+
+        SkillManager.Instance.RegisterCharacter(characterId, skillConfigs, initialMaxHealth.Value, initialAttack.Value);
     }
 
-    // 属性修改方法（保持原有逻辑）
-    public void AddAttack(int val) => attack.AddBonus(val);
-    public void TakeDamage(int damage) => health.AddBase(-damage);
+    private void Update()
+    {
+        if (!Input.GetKeyDown(KeyCode.J))
+        {
+            return;
+        }
 
-    // 给 Lua 提供简单接口，避免 Lua 直接访问 FinalState 字段
-    public int GetAttackValue() => (int)attack.Value;
-    public int GetHealthValue() => (int)health.Value;
+        if (SkillManager.Instance == null)
+        {
+            return;
+        }
+
+        if (skillConfigs == null || skillConfigs.Count == 0)
+        {
+            return;
+        }
+
+        SkillSO skillConfig = skillConfigs[0];
+
+        if (skillConfig == null)
+        {
+            return;
+        }
+
+        SkillManager.Instance.RequestCast(characterId, skillConfig.skillID, this, this);
+    }
+
+    public void TakeDamage(int damage)
+    {
+        CharacterRuntime runtime = GetRuntime();
+
+        if (runtime == null)
+        {
+            return;
+        }
+
+        runtime.TakeDamage(damage);
+    }
+
+    public void Heal(int amount)
+    {
+        CharacterRuntime runtime = GetRuntime();
+
+        if (runtime == null)
+        {
+            return;
+        }
+
+        runtime.Heal(amount);
+    }
+
+    public void AddAttack(int value)
+    {
+        CharacterRuntime runtime = GetRuntime();
+
+        if (runtime == null)
+        {
+            return;
+        }
+
+        runtime.AddAttack(value);
+    }
+
+    public int GetAttackValue()
+    {
+        CharacterRuntime runtime = GetRuntime();
+
+        if (runtime == null)
+        {
+            return Mathf.FloorToInt(initialAttack.Value);
+        }
+
+        return runtime.GetAttackValue();
+    }
+
+    public int GetHealthValue()
+    {
+        CharacterRuntime runtime = GetRuntime();
+
+        if (runtime == null)
+        {
+            return Mathf.FloorToInt(initialMaxHealth.Value);
+        }
+
+        return runtime.GetHealthValue();
+    }
+
+    public int GetMaxHealthValue()
+    {
+        CharacterRuntime runtime = GetRuntime();
+
+        if (runtime == null)
+        {
+            return Mathf.FloorToInt(initialMaxHealth.Value);
+        }
+
+        return runtime.GetMaxHealthValue();
+    }
+
+    public bool IsDead()
+    {
+        CharacterRuntime runtime = GetRuntime();
+        return runtime != null && runtime.IsDead;
+    }
+
+    public CharacterRuntime GetRuntime()
+    {
+        if (SkillManager.Instance == null)
+        {
+            return null;
+        }
+
+        return SkillManager.Instance.GetRuntime(characterId);
+    }
 
     private void OnDestroy()
     {
-        if (SkillManager.Instance != null)
-            SkillManager.Instance.UnregisterCharacter(characterId);
+        if (SkillManager.Instance == null)
+        {
+            return;
+        }
+
+        SkillManager.Instance.UnregisterCharacter(characterId);
     }
 }

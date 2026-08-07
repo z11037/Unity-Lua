@@ -26,7 +26,7 @@ public class SkillEditorWindow : EditorWindow
 
     private readonly UndoStack unifiedUndoStack = new();
 
-    [MenuItem("Tools/技能编辑器")]
+    [MenuItem("Tools/技能/技能编辑器")]
     public static void ShowWindow()
     {
         EditorWindow.GetWindow<SkillEditorWindow>("技能编辑器");

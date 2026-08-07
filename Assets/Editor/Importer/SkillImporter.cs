@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class SkillImporter
 {
-    [MenuItem("Tools/导入技能CSV")]
+    [MenuItem("Tools/技能/导入技能CSV")]
     public static void Import()
     {
         // 选择CSV文件

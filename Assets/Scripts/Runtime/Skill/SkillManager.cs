@@ -35,7 +35,7 @@ public sealed class SkillManager : MonoBehaviour
         }
     }
 
-    public bool RegisterCharacter( int characterId,List<SkillSO> configs)
+    public void RegisterCharacter(int characterId, List<SkillSO> skillConfigs, float initialMaxHealth, float initialAttack)
     {
         if (runtimes.ContainsKey(characterId))
         {
@@ -43,11 +43,11 @@ public sealed class SkillManager : MonoBehaviour
             UnregisterCharacter(characterId);
         }
 
-        CharacterRuntime runtime =new CharacterRuntime(characterId);
+        CharacterRuntime runtime = new CharacterRuntime(characterId, initialMaxHealth, initialAttack);
 
-        if (configs != null)
+        if (skillConfigs != null)
         {
-            foreach (SkillSO config in configs)
+            foreach (SkillSO config in skillConfigs)
             {
                 if (config != null)
                 {
@@ -59,9 +59,8 @@ public sealed class SkillManager : MonoBehaviour
 
         runtimes.Add(characterId, runtime);
 
-        Log.Skill( $"角色 {characterId} 注册完成，技能数量：{configs?.Count ?? 0}");
+        Log.Skill( $"角色 {characterId} 注册完成，技能数量：{skillConfigs?.Count ?? 0}");
 
-        return true;
     }
 
     public bool UnregisterCharacter(int characterId)
