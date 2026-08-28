@@ -18,5 +18,4 @@ MonoBehaviour:
   duration: 5
   tickInterval: 1
   maxStack: 1
-  tickDamage: 5
-  attackModifier: 0
+  effectValue: 10

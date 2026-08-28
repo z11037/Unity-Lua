@@ -18,4 +18,4 @@ MonoBehaviour:
   cooldown: 1
   tag: 1
   associatedBuff: {fileID: 11400000, guid: 8b7de9301094af842a4729b2a2fa8254, type: 2}
-  buffTarget: 0
+  buffTarget: 1

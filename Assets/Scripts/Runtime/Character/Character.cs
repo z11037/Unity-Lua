@@ -6,6 +6,8 @@ using XLua;
 [LuaCallCSharp]
 public class Character : MonoBehaviour
 {
+    [SerializeField] private Character testTarget;
+
     [FormerlySerializedAs("health")]
     [SerializeField] private FinalState initialMaxHealth;
 
@@ -15,7 +17,7 @@ public class Character : MonoBehaviour
     [SerializeField] private List<SkillSO> skillConfigs = new List<SkillSO>();
 
     public string characterName;
-
+    private CharacterRuntime runtime;
     private int characterId;
 
     private void Awake()
@@ -35,13 +37,35 @@ public class Character : MonoBehaviour
 
     private void Start()
     {
-        if (SkillManager.Instance == null)
+        if (CharacterRuntimeManager.Instance == null)
         {
-            Log.Skill($"[Warning] ½ÇÉ« {characterId} ×¢²áÊ§°Ü£ºSkillManager ÉÐÎ´³õÊ¼»¯");
+            Debug.LogWarning($"½ÇÉ« {characterId} ×¢²áÊ§°Ü£ºCharacterRuntimeManager ÉÐÎ´³õÊ¼»¯");
             return;
         }
 
-        SkillManager.Instance.RegisterCharacter(characterId, skillConfigs, initialMaxHealth.Value, initialAttack.Value);
+        runtime = CharacterRuntimeManager.Instance.RegisterCharacter(characterId, initialMaxHealth.Value, initialAttack.Value);
+
+        if (runtime == null)
+        {
+            return;
+        }
+
+        runtime.OnDied += HandleDied;
+
+        if (SkillManager.Instance == null)
+        {
+            Log.Skill($"[Warning] ½ÇÉ« {characterId} ¼¼ÄÜ×¢²áÊ§°Ü£ºSkillManager ÉÐÎ´³õÊ¼»¯");
+            return;
+        }
+
+        SkillManager.Instance.RegisterSkills(characterId, skillConfigs);
+    }
+
+    private void HandleDied()
+    {
+        Debug.Log($"½ÇÉ« {characterName} ÒÑËÀÍö");
+
+        enabled = false;
     }
 
     private void Update()
@@ -63,14 +87,13 @@ public class Character : MonoBehaviour
 
         SkillSO skillConfig = skillConfigs[0];
 
-        if (skillConfig == null)
+        if (skillConfig == null || testTarget == null)
         {
             return;
         }
 
-        SkillManager.Instance.RequestCast(characterId, skillConfig.skillID, this, this);
+        SkillManager.Instance.RequestCast(characterId, skillConfig.skillID, this, testTarget);
     }
-
     public void TakeDamage(int damage)
     {
         CharacterRuntime runtime = GetRuntime();
@@ -151,21 +174,32 @@ public class Character : MonoBehaviour
 
     public CharacterRuntime GetRuntime()
     {
-        if (SkillManager.Instance == null)
+        if (runtime != null)
+        {
+            return runtime;
+        }
+
+        if (CharacterRuntimeManager.Instance == null)
         {
             return null;
         }
 
-        return SkillManager.Instance.GetRuntime(characterId);
+        return CharacterRuntimeManager.Instance.GetRuntime(characterId);
     }
 
     private void OnDestroy()
     {
-        if (SkillManager.Instance == null)
+        if (runtime != null)
+        {
+            runtime.OnDied -= HandleDied;
+            runtime = null;
+        }
+
+        if (CharacterRuntimeManager.Instance == null)
         {
             return;
         }
 
-        SkillManager.Instance.UnregisterCharacter(characterId);
+        CharacterRuntimeManager.Instance.UnregisterCharacter(characterId);
     }
 }

@@ -3,13 +3,7 @@ using UnityEngine;
 
 public sealed class SkillManager : MonoBehaviour
 {
-    public static SkillManager Instance
-    {
-        get;
-        private set;
-    }
-
-    private readonly Dictionary<int, CharacterRuntime> runtimes =new Dictionary<int, CharacterRuntime>();
+    public static SkillManager Instance { get; private set; }
 
     private void Awake()
     {
@@ -27,65 +21,73 @@ public sealed class SkillManager : MonoBehaviour
 
     private void Update()
     {
+        if (CharacterRuntimeManager.Instance == null)
+        {
+            return;
+        }
+
         float deltaTime = Time.deltaTime;
 
-        foreach (CharacterRuntime runtime in runtimes.Values)
+        foreach (CharacterRuntime runtime in CharacterRuntimeManager.Instance.GetAllRuntimes())
         {
             runtime.Tick(deltaTime);
         }
     }
 
-    public void RegisterCharacter(int characterId, List<SkillSO> skillConfigs, float initialMaxHealth, float initialAttack)
+    public bool RegisterSkills(int characterId, List<SkillSO> skillConfigs)
     {
-        if (runtimes.ContainsKey(characterId))
+        if (CharacterRuntimeManager.Instance == null)
         {
-            Log.Skill( $"[Warning] 角色 {characterId} 已注册，将替换旧运行时");
-            UnregisterCharacter(characterId);
-        }
-
-        CharacterRuntime runtime = new CharacterRuntime(characterId, initialMaxHealth, initialAttack);
-
-        if (skillConfigs != null)
-        {
-            foreach (SkillSO config in skillConfigs)
-            {
-                if (config != null)
-                {
-                    runtime.RegisterSkill(config);
-                }
-                    
-            }
-        }
-
-        runtimes.Add(characterId, runtime);
-
-        Log.Skill( $"角色 {characterId} 注册完成，技能数量：{skillConfigs?.Count ?? 0}");
-
-    }
-
-    public bool UnregisterCharacter(int characterId)
-    {
-        if (!runtimes.TryGetValue( characterId,out CharacterRuntime runtime))
-        {
-            Log.Skill($"[Warning] 无法注销角色 {characterId}：运行时不存在");
-
+            Log.Skill($"[Warning] 角色 {characterId} 注册技能失败：CharacterRuntimeManager 未初始化");
             return false;
         }
 
-        runtime.Dispose();
-        runtimes.Remove(characterId);
+        CharacterRuntime runtime = CharacterRuntimeManager.Instance.GetRuntime(characterId);
 
-        Log.Skill( $"角色 {characterId} 已从 SkillManager 注销");
+        if (runtime == null)
+        {
+            Log.Skill($"[Warning] 角色 {characterId} 注册技能失败：Runtime 不存在");
+            return false;
+        }
+
+        if (skillConfigs == null)
+        {
+            return true;
+        }
+
+        int successCount = 0;
+
+        foreach (SkillSO config in skillConfigs)
+        {
+            if (config == null)
+            {
+                continue;
+            }
+
+            if (runtime.RegisterSkill(config))
+            {
+                successCount++;
+            }
+        }
+
+        Log.Skill($"角色 {characterId} 技能注册完成，成功数量：{successCount}");
 
         return true;
     }
 
-    public bool RequestCast(int characterId, int skillId,Character caster, Character target)
+    public bool RequestCast(int characterId, int skillId, Character caster, Character target)
     {
-        if (!runtimes.TryGetValue( characterId, out CharacterRuntime runtime))
+        if (CharacterRuntimeManager.Instance == null)
         {
-            Log.Skill( $"角色 {characterId} 请求释放技能 {skillId} 失败：运行时不存在");
+            Log.Skill($"角色 {characterId} 请求释放技能 {skillId} 失败：CharacterRuntimeManager 未初始化");
+            return false;
+        }
 
+        CharacterRuntime runtime = CharacterRuntimeManager.Instance.GetRuntime(characterId);
+
+        if (runtime == null)
+        {
+            Log.Skill($"角色 {characterId} 请求释放技能 {skillId} 失败：运行时不存在");
             return false;
         }
 
@@ -101,36 +103,12 @@ public sealed class SkillManager : MonoBehaviour
         return success;
     }
 
-    public bool TryGetRuntime( int characterId, out CharacterRuntime runtime)
-    {
-        return runtimes.TryGetValue( characterId, out runtime);
-    }
-
-    public CharacterRuntime GetRuntime(int characterId)
-    {
-        runtimes.TryGetValue( characterId, out CharacterRuntime runtime);
-        return runtime;
-    }
-
-    public IEnumerable<CharacterRuntime> GetAllRuntimes()
-    {
-        return runtimes.Values;
-    }
     private void OnDestroy()
     {
-        foreach (CharacterRuntime runtime in runtimes.Values)
-        {
-            if (BuffManager.Instance != null)
-            {
-                BuffManager.Instance.RemoveAllBuffs(runtime);
-            }
-            runtime.Dispose();
-        }
-
-        runtimes.Clear();
-
         if (Instance == this)
+        {
             Instance = null;
+        }
 
         Log.Skill("SkillManager 已销毁");
     }

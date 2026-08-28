@@ -12,11 +12,13 @@ public sealed class CharacterRuntime : IDisposable
 
     public bool IsDead => CurrentHealth <= 0f;
 
-    public event Action<float, float> OnHealthChanged;
+    
 
     private readonly Dictionary<int, Skill> skills = new Dictionary<int, Skill>();
     private readonly List<Buff> buffs = new List<Buff>();
 
+    public event Action<float, float> OnHealthChanged;
+    public event Action OnDied;
     public IReadOnlyList<Buff> Buffs
     {
         get
@@ -54,6 +56,11 @@ public sealed class CharacterRuntime : IDisposable
 
         OnHealthChanged?.Invoke(CurrentHealth, MaxHealth.Value);
         Log.Buff($"角色 {CharacterId} 受到 {damage} 点伤害，当前生命值 {CurrentHealth}/{MaxHealth.Value}");
+
+        if (IsDead)
+        {
+            OnDied?.Invoke();
+        }
     }
 
     public void Heal(int amount)
@@ -279,7 +286,7 @@ public sealed class CharacterRuntime : IDisposable
 
         buffs.Clear();
         OnHealthChanged = null;
-
+        OnDied = null;
         Debug.Log($"角色 {CharacterId} 的 CharacterRuntime 已释放");
     }
 }

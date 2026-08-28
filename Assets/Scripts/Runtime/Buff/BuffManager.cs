@@ -23,14 +23,14 @@ public class BuffManager : MonoBehaviour
     private void Update()
     {
 
-        if (SkillManager.Instance == null)
+        if (CharacterRuntimeManager.Instance == null)
         {
             return;
         }
 
         float deltaTime = Time.deltaTime;
 
-        foreach (CharacterRuntime runtime in SkillManager.Instance.GetAllRuntimes())
+        foreach (CharacterRuntime runtime in CharacterRuntimeManager.Instance.GetAllRuntimes())
         {
             
 
@@ -39,7 +39,7 @@ public class BuffManager : MonoBehaviour
                 continue;
             }
 
-            if (runtime.IsDead&&runtime.Buffs.Count!=0)
+            if (runtime.IsDead && runtime.Buffs.Count != 0)
             {
                 RemoveAllBuffs(runtime);
                 continue;
@@ -83,13 +83,13 @@ public class BuffManager : MonoBehaviour
             return;
         }
 
-        if (SkillManager.Instance == null)
+        if (CharacterRuntimeManager.Instance == null)
         {
-            Log.Buff($"[Warning] Buff {config.buffID} ÃÌº” ß∞‹£∫SkillManager …–Œ¥≥ı ºªØ");
+            Log.Buff($"[Warning] Buff {config.buffID} ÃÌº” ß∞‹£∫CharacterRuntimeManager …–Œ¥≥ı ºªØ");
             return;
         }
 
-        CharacterRuntime runtime = SkillManager.Instance.GetRuntime(target.GetInstanceID());
+        CharacterRuntime runtime = CharacterRuntimeManager.Instance.GetRuntime(target.GetInstanceID());
 
         if (runtime == null)
         {
